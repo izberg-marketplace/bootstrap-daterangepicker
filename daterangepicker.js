@@ -45,22 +45,50 @@
 
         //create the picker HTML object
         var DRPTemplate = '<div class="daterangepicker dropdown-menu">' +
-                '<div class="calendar first left"></div>' +
-                '<div class="calendar second right"></div>' +
-                '<div class="ranges">' +
-                  '<div class="range_inputs">' +
-                    '<div class="daterangepicker_start_input">' +
-                      '<label for="daterangepicker_start"></label>' +
-                      '<input class="input-mini" type="text" name="daterangepicker_start" value="" />' +
+                    '<div class="ranges ">' +
+                      '<div class="range_inputs">' +
+                        '<div class="row">' +
+                            '<div class="col-md-12">' +
+                                '<div class="row">' +
+                                    '<div class="col-md-6 col-sm-6 col-xs-6">' +
+                                        '<div class="daterangepicker_start_input">' +
+                                          '<label for="daterangepicker_start"></label>' +
+                                          '<input class="input-mini" type="text" name="daterangepicker_start" value="" />' +
+                                        '</div>' +
+                                    '</div>' +
+                                    '<div class="col-md-6 col-sm-6 col-xs-6">' +
+                                        '<div class="daterangepicker_end_input">' +
+                                          '<label for="daterangepicker_end"></label>' +
+                                          '<input class="input-mini" type="text" name="daterangepicker_end" value="" />' +
+                                        '</div>' +
+                                    '</div>' +
+                                '</div>' +
+                            '</div>' +
+                        '</div>' +
+                        '<div class="row">' +
+                            '<div class="col-md-12 text-right">' +
+                                '<button class="applyBtn" disabled="disabled"></button>&nbsp;' +
+                                '<button class="cancelBtn"></button>' +
+                            '</div>' +
+                        '</div>' +
+                      '</div>' +
                     '</div>' +
-                    '<div class="daterangepicker_end_input">' +
-                      '<label for="daterangepicker_end"></label>' +
-                      '<input class="input-mini" type="text" name="daterangepicker_end" value="" />' +
-                    '</div>' +
-                    '<button class="applyBtn" disabled="disabled"></button>&nbsp;' +
-                    '<button class="cancelBtn"></button>' +
-                  '</div>' +
-                '</div>' +
+                    '<div class="calendar first left  hidden-sm hidden-xs"></div>' +
+                    '<div class="calendar second right  hidden-sm hidden-xs"></div>' +
+                    // '<div class="ranges">' +
+                    //   '<div class="range_inputs">' +
+                    //     '<div class="daterangepicker_start_input">' +
+                    //       '<label for="daterangepicker_start"></label>' +
+                    //       '<input class="input-mini" type="text" name="daterangepicker_start" value="" />' +
+                    //     '</div>' +
+                    //     '<div class="daterangepicker_end_input">' +
+                    //       '<label for="daterangepicker_end"></label>' +
+                    //       '<input class="input-mini" type="text" name="daterangepicker_end" value="" />' +
+                    //     '</div>' +
+                    //     '<button class="applyBtn" disabled="disabled"></button>&nbsp;' +
+                    //     '<button class="cancelBtn"></button>' +
+                    //   '</div>' +
+                    // '</div>' +
               '</div>';
 
         //custom options
@@ -143,13 +171,16 @@
             this.format = 'MM/DD/YYYY';
             this.separator = ' - ';
 
+            var MP = MP || {};
+            MP.trads = MP.trads || {};
+            // Modified !
             this.locale = {
-                applyLabel: 'Apply',
-                cancelLabel: 'Cancel',
-                fromLabel: 'From',
-                toLabel: 'To',
-                weekLabel: 'W',
-                customRangeLabel: 'Custom Range',
+                applyLabel: MP.trads.Apply,
+                cancelLabel: MP.trads.Cancel,
+                fromLabel: MP.trads.From,
+                toLabel: MP.trads.To,
+                weekLabel: MP.trads.W,
+                customRangeLabel: MP.trads.CustomRange,
                 daysOfWeek: moment.weekdaysMin(),
                 monthNames: moment.monthsShort(),
                 firstDay: moment.localeData()._week.dow
@@ -317,11 +348,11 @@
 
             // bind the time zone used to build the calendar to either the timeZone passed in through the options or the zone of the startDate (which will be the local time zone by default)
             if (typeof options.timeZone === 'string' || typeof options.timeZone === 'number') {
-            	if (typeof options.timeZone === 'string' && typeof moment.tz !== 'undefined') {
-            		this.timeZone = moment.tz.zone(options.timeZone).parse(new Date) * -1;	// Offset is positive if the timezone is behind UTC and negative if it is ahead.
-            	} else {
-            		this.timeZone = options.timeZone;
-            	}
+                if (typeof options.timeZone === 'string' && typeof moment.tz !== 'undefined') {
+                    this.timeZone = moment.tz.zone(options.timeZone).parse(new Date) * -1;  // Offset is positive if the timezone is behind UTC and negative if it is ahead.
+                } else {
+                    this.timeZone = options.timeZone;
+                }
               this.startDate.utcOffset(this.timeZone);
               this.endDate.utcOffset(this.timeZone);
             } else {
@@ -393,9 +424,13 @@
                     this.container.find('.calendar.right').addClass('single');
             } else {
                 this.container.removeClass('single');
+                // this.container.find('.calendar.left').show();
                 this.container.find('.calendar.right').removeClass('single');
-                this.container.find('.calendar.left').show();
-                this.container.find('.ranges').show();
+                if (!this.timePicker) {
+                    this.container.find('.ranges').show();
+                } else {
+                    this.container.find('.ranges .daterangepicker_start_input, .ranges .daterangepicker_end_input').show();
+                }
             }
 
             this.oldStartDate = this.startDate.clone();
@@ -537,12 +572,12 @@
 
             this.updateCalendars();
         },
-        
+
         keydown: function (e) {
             //hide on tab or enter
-        	if ((e.keyCode === 9) || (e.keyCode === 13)) {
-        		this.hide();
-        	}
+            if ((e.keyCode === 9) || (e.keyCode === 13)) {
+                this.hide();
+            }
         },
 
         notify: function () {
@@ -552,7 +587,7 @@
 
         move: function () {
             var parentOffset = { top: 0, left: 0 },
-            	containerTop;
+                containerTop;
             var parentRightEdge = $(window).width();
             if (!this.parentEl.is('body')) {
                 parentOffset = {
@@ -561,11 +596,11 @@
                 };
                 parentRightEdge = this.parentEl[0].clientWidth + this.parentEl.offset().left;
             }
-            
+
             if (this.drops == 'up')
-            	containerTop = this.element.offset().top - this.container.outerHeight() - parentOffset.top;
+                containerTop = this.element.offset().top - this.container.outerHeight() - parentOffset.top;
             else
-            	containerTop = this.element.offset().top + this.element.outerHeight() - parentOffset.top;
+                containerTop = this.element.offset().top + this.element.outerHeight() - parentOffset.top;
             this.container[this.drops == 'up' ? 'addClass' : 'removeClass']('dropup');
 
             if (this.opens == 'left') {
